@@ -1,14 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
-  images: {
-    remotePatterns: [
+  redirects() {
+    return [
       {
-        hostname: 'picsum.photos',
+        source: '/',
+        destination: '/channel/1/videos',
+        permanent: false
       },
-    ],
+    ]
   },
 };
 
 export default nextConfig;
-
