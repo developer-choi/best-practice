@@ -11,6 +11,8 @@ export async function getChannelInfoApi(id: string) {
 }
 
 export async function getVideoListApi(id: string) {
-  const response = await baseFetch<VideoListApiResponse>(`/channel/${id}/videos`);
+  const response = await baseFetch<VideoListApiResponse>(`/channel/${id}/videos`, {
+    cache: 'no-store'
+  });
   return {data: response};
 }
