@@ -1,8 +1,15 @@
 import {timeoutPromise} from '@/utils/promise';
 import {Video, VideoListApiResponse} from '@/types/channel';
+import {NextRequest} from 'next/server';
 
-export async function GET() {
+export async function GET(_: NextRequest, {params: {id}}: {params: {id: string}}) {
   await timeoutPromise(200);
+
+  if(id !== '1') {
+    return new Response('', {
+      status: 404
+    });
+  }
 
   const response: VideoListApiResponse = {
     list: new Array(12).fill(0).map((_, index) => {
