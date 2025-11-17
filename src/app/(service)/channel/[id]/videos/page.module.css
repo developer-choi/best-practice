@@ -1,0 +1,41 @@
+.pageContainer {
+  padding-block: 24px;
+}
+
+.listContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px 16px;
+}
+
+.videoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.thumbnailContainer {
+  position: relative;
+}
+
+.videoThumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.videoDetails {
+  padding-block-start: 12px;
+}
+
+.videoTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #0f0f0f;
+  margin-block-end: 6px;
+}
+
+.videoMetadata {
+  font-size: 14px;
+  color: #606060;
+}
