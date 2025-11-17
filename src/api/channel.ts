@@ -1,25 +1,12 @@
 import {ChannelInfoApiResponse, VideoListApiResponse} from '@/types/channel';
+import {baseFetch} from '@/utils/fetch';
 
-export function getChannelInfoApi() {
-  const response: ChannelInfoApiResponse = {
-    banner: '/banner.jpg',
-    avatar: '/channel.jpg',
-    name: 'Vercel',
-    subscribersCount: 110,
-  };
-
+export async function getChannelInfoApi(id: string) {
+  const response = await baseFetch<ChannelInfoApiResponse>(`/channel/${id}/info`);
   return {data: response};
 }
 
-export function getVideoListApi() {
-  const response: VideoListApiResponse = {
-    list: Array.from({length: 12}).map((_, i) => ({
-      id: i,
-      thumbnail: `/video${i % 2}.avif`,
-      title: `Vercel Ship 2024 Day 1: The Keynote - Video ${i + 1}`,
-      viewCount: 123,
-    }))
-  };
-
+export async function getVideoListApi(id: string) {
+  const response = await baseFetch<VideoListApiResponse>(`/channel/${id}/videos`);
   return {data: response};
 }

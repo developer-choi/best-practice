@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: 'Vercel - Youtube'
 };
 
-export default function Page() {
-  const {data} = getVideoListApi();
+export default async function Page({params: {id}}: {params: {id: string}}) {
+  const {data} = await getVideoListApi(id);
 
   return (
     <main className={styles.pageContainer}>
