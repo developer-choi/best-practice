@@ -1,8 +1,16 @@
 import ErrorPage from '@/components/ErrorPage';
+import {notFound} from 'next/navigation';
 
 // TODO 이 오류무시 부분은 이후 PR에서 삭제예정
 // eslint-disable-next-line
 export default function handleServerSideError(error: unknown) {
+  // TODO 다음 PR에서 이 부분을 개선할 예정입니다.
+  const isNotFoundError = (error as Response).status === 404;
+
+  if (isNotFoundError) {
+    notFound();
+  }
+
   const isSomeSpecificError = false;
 
   if (isSomeSpecificError) {

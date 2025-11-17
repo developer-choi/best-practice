@@ -5,5 +5,10 @@
  */
 export async function baseFetch<T>(path: string, init?: RequestInit) {
   const response = await fetch(`https://best-practice-alpha.vercel.app/api${path}`, init);
-  return await response.json() as T;
+
+  if (response.ok) {
+    return await response.json() as T;
+  } else {
+    throw response;
+  }
 }

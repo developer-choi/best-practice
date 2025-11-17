@@ -5,6 +5,7 @@ import BaseImage from '@/components/BaseImage';
 import classNames from 'classnames';
 import PortfolioLink from '@/components/PortfolioLink';
 import {getChannelInfoApi} from '@/api/channel';
+import {notFound} from 'next/navigation';
 
 export interface ChannelLayoutProps {
   children?: ReactNode;
@@ -12,18 +13,29 @@ export interface ChannelLayoutProps {
 }
 
 export default async function ChannelLayout({children, params}: ChannelLayoutProps) {
-  const {data} = await getChannelInfoApi(params.id);
+  try {
+    const {data} = await getChannelInfoApi(params.id);
 
-  return (
-    <div className={styles.container}>
-      <header>
-        <BaseImage src={data.banner} alt="Channel Banner" className={styles.channelBanner} width={1284} height={207}/>
-        <ChannelInfo info={data}/>
-        <ChannelTabs id={params.id}/>
-      </header>
-      {children}
-    </div>
-  );
+    return (
+      <div className={styles.container}>
+        <header>
+          <BaseImage src={data.banner} alt="Channel Banner" className={styles.channelBanner} width={1284} height={207}/>
+          <ChannelInfo info={data}/>
+          <ChannelTabs id={params.id}/>
+        </header>
+        {children}
+      </div>
+    );
+  } catch (error) {
+    // TODO 다음 PR에서 이 부분을 개선할 예정입니다.
+    const isNotFoundError = (error as Response).status === 404;
+
+    if (isNotFoundError) {
+      notFound();
+    }
+
+    throw error;
+  }
 }
 
 function ChannelInfo({info}: {info: Pick<ChannelInfoApiResponse, 'avatar' | 'subscribersCount' | 'name'>}) {
