@@ -11,8 +11,8 @@ export interface ChannelLayoutProps {
   params: {id: string};
 }
 
-export default function ChannelLayout({children, params}: ChannelLayoutProps) {
-  const {data} = getChannelInfoApi();
+export default async function ChannelLayout({children, params}: ChannelLayoutProps) {
+  const {data} = await getChannelInfoApi(params.id);
 
   return (
     <div className={styles.container}>
