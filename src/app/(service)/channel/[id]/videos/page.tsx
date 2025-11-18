@@ -16,7 +16,7 @@ export default async function Page({params: {id}}: {params: {id: string}}) {
     return (
       <main className={styles.pageContainer}>
         {data.list.length === 0 ? (
-          <div>비디오 목록이 없어요</div>
+          <div role="status">비디오 목록이 없어요</div>
         ) : (
           <ul className={styles.listContainer}>
             {data.list.map((video) => {
