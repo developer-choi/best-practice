@@ -26,16 +26,60 @@
 
 .videoDetails {
   padding-block-start: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .videoTitle {
   font-size: 16px;
   font-weight: 500;
   color: #0f0f0f;
-  margin-block-end: 6px;
 }
 
 .videoMetadata {
   font-size: 14px;
   color: #606060;
+}
+
+.skeletonBox {
+  background-color: #e0e0e0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.skeletonBox::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.videoTitleLine {
+  height: 18px;
+  width: 90%;
+}
+
+.videoMetaLine {
+  height: 16px;
+  width: 60%;
 }
