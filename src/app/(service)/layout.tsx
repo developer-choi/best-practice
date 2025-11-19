@@ -5,6 +5,8 @@ import styles from './layout.module.css';
 import BaseImage from '@/components/BaseImage';
 import PortfolioLink from '@/components/PortfolioLink';
 
+import ReactQueryProvider from '@/components/Providers';
+
 export interface RootLayoutProps {
   children?: ReactNode;
 }
@@ -16,7 +18,9 @@ export default function RootLayout({children}: RootLayoutProps) {
       <div className={styles.layoutContainer}>
         <Sidebar/>
         <div className={styles.pageContainer}>
-          {children}
+          <ReactQueryProvider>
+            {children}
+          </ReactQueryProvider>
         </div>
       </div>
     </>

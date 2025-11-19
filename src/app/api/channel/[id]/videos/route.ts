@@ -3,7 +3,7 @@ import {Video, VideoListApiResponse} from '@/types/channel';
 import {NextRequest} from 'next/server';
 
 export async function GET(_: NextRequest, {params: {id}}: {params: {id: string}}) {
-  await timeoutPromise(200);
+  await timeoutPromise(2000);
 
   if(id !== '1') {
     return new Response('', {

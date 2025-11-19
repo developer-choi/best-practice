@@ -1,39 +1,71 @@
-import React, {type ReactNode} from 'react';
+'use client';
+
+import React, {type ReactNode, Suspense} from 'react';
 import styles from './layout.module.css';
 import {ChannelInfoApiResponse} from '@/types/channel';
 import BaseImage from '@/components/BaseImage';
 import classNames from 'classnames';
 import PortfolioLink from '@/components/PortfolioLink';
 import {getChannelInfoApi} from '@/api/channel';
-import {notFound} from 'next/navigation';
-import {ApiResponseError} from '@/utils/ApiResponseError';
+import {useSuspenseQuery} from '@tanstack/react-query';
 
 export interface ChannelLayoutProps {
   children?: ReactNode;
   params: {id: string};
 }
 
-export default async function ChannelLayout({children, params}: ChannelLayoutProps) {
-  try {
-    const {data} = await getChannelInfoApi(params.id);
+export default function ChannelLayout({children, params}: ChannelLayoutProps) {
+  return (
+    <div className={styles.container}>
+      <header>
+        <Suspense fallback={<LayoutSkeleton />}>
+          <Data id={params.id}/>
+        </Suspense>
+      </header>
+      {children}
+    </div>
+  );
+}
 
-    return (
-      <div className={styles.container}>
-        <header>
-          <BaseImage src={data.banner} alt="Channel Banner" className={styles.channelBanner} width={1284} height={207}/>
-          <ChannelInfo info={data}/>
-          <ChannelTabs id={params.id}/>
-        </header>
-        {children}
+function LayoutSkeleton() {
+  return (
+    <>
+      <div className={classNames(styles.channelBanner, styles.skeletonBox)} style={{height: 211, marginBottom: 16}}/>
+      <div className={styles.channelHeaderContent}>
+        <div className={classNames(styles.channelAvatar, styles.skeletonBox)} style={{width: 160, height: 160}}/>
+        <div>
+          <div className={classNames(styles.skeletonBox)} style={{width: 200, height: 36, marginBottom: 16}}/>
+          <div className={classNames(styles.skeletonBox)} style={{width: 100, height: 20}}/>
+        </div>
       </div>
-    );
-  } catch (error) {
-    if (error instanceof ApiResponseError && error.response.status === 404) {
-      notFound();
-    } else {
-      throw error;
-    }
-  }
+      <nav>
+        <ul className={styles.channelTabs}>
+          {TABS.map(tab => (
+            <li key={tab.path} className={styles.tabItem}>
+              <div className={styles.skeletonBox} style={{width: 50, height: 20}}/>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
+  );
+}
+
+function Data({id}: {id: string}) {
+  const {data: response} = useSuspenseQuery({
+    queryKey: ['channel', id],
+    queryFn: () => getChannelInfoApi(id),
+  });
+
+  const data = response.data;
+
+  return (
+    <>
+      <BaseImage src={data.banner} alt="Channel Banner" className={styles.channelBanner} width={1284} height={207}/>
+      <ChannelInfo info={data}/>
+      <ChannelTabs id={id}/>
+    </>
+  )
 }
 
 function ChannelInfo({info}: {info: Pick<ChannelInfoApiResponse, 'avatar' | 'subscribersCount' | 'name'>}) {
