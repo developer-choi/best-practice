@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Project Overview
 
-## Getting Started
+> [유튜브 채널 페이지](https://www.youtube.com/@VercelHQ)를 예제로 구현하며, 저의 개발 가치관을 담은 프로젝트입니다.
 
-First, run the development server:
+---
+
+# 1. Project Concept
+
+구현 과정을 PR 단위로 기록했습니다. 각 링크를 클릭하시면 상세 내용을 확인하실 수 있습니다.
+
+### 🚀 PR 1. [성능 개선](여기에_실제_PR_링크를_넣으세요)
+* **Server Components:** 번들 사이즈 감소
+* **Streaming:** SSR의 Blocking 문제 해결 및 TTFB 단축
+* **Caching Strategy:** 데이터 성격에 따른 Time-based, On-demand Revalidation 설계
+
+### 🛡️ PR 2. [Sentry 도입](여기에_실제_PR_링크를_넣으세요)
+* **Class-based:** Sentry 로직을 추상화하여, 팀원들이 별도 학습 없이 사용 가능
+* **Triage Process:** `발견 → 분류 → 해결`로 이어지는 에러 대응 워크플로우
+
+### 🧪 PR 3. [테스트 적용](여기에_실제_PR_링크를_넣으세요)
+Testing Library의 공식 원칙(Guiding Principles)을 준수하여, 사용자 관점의 테스트를 작성했습니다.
+
+---
+
+# 2. Getting Started
+
+아래 링크를 통해 배포된 결과물을 바로 확인하시거나, 로컬 환경에서 실행해보실 수 있습니다.
+
+**👉 [Deployment Link (Vercel)](여기에_배포_링크를_넣으세요)**
 
 ```bash
-npm run dev
-# or
+# 1. Install dependencies
+yarn install
+
+# 2. Run development server
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
