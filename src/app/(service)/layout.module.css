@@ -1,0 +1,58 @@
+.layoutContainer {
+  height: 100%;
+}
+
+.headerContainer {
+  position: fixed;
+  top: 0;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 0;
+  padding-inline: 16px;
+  box-sizing: border-box;
+  z-index: 1000;
+  background-color: white;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.sidebarContainer {
+  position: fixed;
+  top: 56px;
+  inset-inline-start: 0;
+  width: 240px;
+  height: calc(100vh - 56px);
+  padding: 12px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.sidebarItem:hover {
+  background-color: #f2f2f2;
+}
+
+.sidebarItem span {
+  font-size: 14px;
+}
+
+.pageContainer {
+  padding-top: 56px;
+  margin-left: 240px;
+  height: 100%;
+}
