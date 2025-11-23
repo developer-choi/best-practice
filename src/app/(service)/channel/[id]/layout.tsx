@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import PortfolioLink from '@/components/PortfolioLink';
 import {getChannelInfoApi} from '@/api/channel';
 import {notFound} from 'next/navigation';
+import {ApiResponseError} from '@/utils/ApiResponseError';
 
 export interface ChannelLayoutProps {
   children?: ReactNode;
@@ -27,14 +28,11 @@ export default async function ChannelLayout({children, params}: ChannelLayoutPro
       </div>
     );
   } catch (error) {
-    // TODO 다음 PR에서 이 부분을 개선할 예정입니다.
-    const isNotFoundError = (error as Response).status === 404;
-
-    if (isNotFoundError) {
+    if (error instanceof ApiResponseError && error.response.status === 404) {
       notFound();
+    } else {
+      throw error;
     }
-
-    throw error;
   }
 }
 
