@@ -1,3 +1,5 @@
+import {ApiResponseError} from '@/utils/ApiResponseError';
+
 /**
  * 임의의 API를 호출했을 때 공통적으로 적용할 전역 로직이 있는 경우
  * 모두 이 함수에 작성을 하려고 의도했으나,
@@ -9,6 +11,6 @@ export async function baseFetch<T>(path: string, init?: RequestInit) {
   if (response.ok) {
     return await response.json() as T;
   } else {
-    throw response;
+    throw new ApiResponseError(init, response);
   }
 }
