@@ -1,130 +1,96 @@
-# Summary
-Next.js 공식 문서의 권장사항을 준수하여 렌더링 성능을 최적화했습니다.
+## 문제
+대부분의 페이지 이동 시 545ms가 걸리는 문제가 있었습니다. (대부분 SSR로 만든 페이지)
 
----
+이 시간은 사용자가 어? 내가 링크를 안눌렀나? 라고 생각할 수 있는 시간입니다.
 
-# Key Changes
+## 원인 분석 & 해결방법 채택
 
-## 1. Server Component
-[feat(data): API 클라이언트를 연동하여 데이터 페칭 로직 구현 > layout.tsx](https://github.com/developer-choi/best-practice/pull/2/commits/e97816bd45916606d1afb038d9b6d2c02d23ca30#diff-861b27daa40abcafed7ed1b02b7643975294cda520e16456599b0ffd9dac1b18)
+545ms 중에서 백엔드 API는 0.3초를 차지하는 상황이었습니다.
 
-### Background
-> [To reduce the size of your client JavaScript bundles, add 'use client' to specific interactive components (Nextjs docs)](https://nextjs.org/docs/app/getting-started/server-and-client-components#reducing-js-bundle-size)
+즉, INP (Interaction to Next Paint)를 먼저 개선하면 사용자의 불만을 크게 줄일 수 있을거라고 판단했습니다.
 
-### Principle
-* 이번 구현 범위에는 인터랙션이 불필요했기에, `use client` 대신 Server Component로 구현했습니다.
-* 반대로 `use client`를 사용해야 한다면, 번들 사이즈 증가라는 비용을 상회할 만큼의 명확한 근거가 있어야 한다고 생각합니다.
-* 그래서, 실무에서는 무한스크롤을 제외하면, Client Component를 사용 할 일이 거의 없었습니다.
-* 같은 근거로, Tanstack Query도 예전에는 많이 사용했지만, 이제는 사용 할 일이 많이 줄어들었습니다.
+그래서, API 응답이 오지 않았어도 다음 페이지에 우선 보내주고
 
+백엔드 API 응답이 될 때까지 로딩을 보여주는 방식을 채택했습니다.
 
-## 2. Streaming 도입
-[feat(loading): 비디오 목록 페이지 로딩 스켈레톤 UI 추가 > loading.tsx](https://github.com/developer-choi/best-practice/pull/2/commits/3b0a147f25c08beaea6698fbadb19239db659d36)
+이것을 실현할 수 있는 방법이 2가지 존재했습니다.
 
-### Background
-> [To improve the initial load time and user experience, you can use streaming (Nextjs Docs)](https://nextjs.org/docs/app/getting-started/fetching-data#streaming)
+1. CSR: Tanstack Query 같은걸 사용하여 Client Side에서 데이터 패칭하고, 응답 전 까지 로딩 보여주기
 
-### Problem
-* 과거 Pages Router 시절에는 `getServerSideProps()`로 SSR을 하는 경우 API 응답이 하나라도 지연되면 페이지 응답이 늦어지는 (Blocking) 치명적인 문제가 있었습니다.
-* 이 문제를 개선하기 위해, CSR으로 전환하여 로딩을 먼저 노출하는 차선책을 사용해왔습니다.
+2. Streaming: Server Side에서 데이터 패칭하고, (이하 동일)
 
-### Solution
-Streaming은 위 두 가지 방식의 장점만을 결합하여 근본적인 문제를 해결합니다.
+## 비교: Non-interactive
+대부분의 페이지에서 데이터가 패칭되는 환경은 전부 Non-interactive 했습니다.
 
-* **vs `getServerSideProps()`:**
-    * 백엔드 API 응답 지연과 무관하게, **즉시** 사용자에게 로딩 화면을 먼저 보여줍니다. (Blocking 해결)
-* **vs CSR:**
-    * **CSR:** `JS 번들 다운로드` → `React 코드 실행` → `그제서야 API 호출` 되는 과정이 필요없습니다.
-    * **Streaming:** 요청이 Nextjs 서버에 도달한 **즉시** 백엔드 API가 호출될 수 있습니다.
+데이터가 불러와지는 트리거가, 사용자가 더보기같은걸 클릭하거나 스크롤을 내리는 행위 같은게 없는 페이지들이었습니다.
 
-### UX Impact
-* 다른 페이지로 가는 링크를 클릭 했을 때 화면 전환이 빨리 일어날 수 있게됩니다.
+이걸 Streaming 하게되면, CSR 대비 크게 2가지 장점이 존재했습니다.
 
+[번들사이즈, 다운받는 시간 캡처 비교]
 
-## 3. Caching Strategy: Channel Info
-[perf(cache): 채널 정보 API에 5분 단위 Time-based Revalidation 적용](https://github.com/developer-choi/best-practice/pull/2/commits/e9728dbfeb40a8b4240cd67e3b353d3eeebe17d8)
+1. **백엔드 API 호출시점:** CSR보다 더 빠른 시점에 백엔드 API를 호출할 수 있습니다. 브라우저가 JS 다운받기 전에 벌써 Nextjs 서버에서 백엔드 API를 호출합니다.
+2. **번들 사이즈:** Server Component도 사용가능하므로, 다운받아야할 JS 크기도 줄어듭니다.
 
-### Background
-> [Next.js has a built-in Data Cache that persists the result of data fetches across incoming server requests and deployments. (Nextjs docs)](https://nextjs.org/docs/14/app/building-your-application/caching#data-cache)
+## 비교: Cache
+Tanstack Query도, Nextjs도 꽤 많은 Cache 관련 설정을 제공합니다.
 
-> [In Next.js, you can have dynamically rendered routes that have both cached and uncached data. (Nextjs docs)](https://nextjs.org/docs/14/app/building-your-application/rendering/server-components#dynamic-rendering)
+Tanstack Query의 차별점은 다양한 refetching 기능을 제공합니다. (ex: Window focus event로 cache 최신화 하기)
 
-### Analysis
-* 유튜브 채널 정보는 모든 사용자에게 동일하게 보이는 정적 데이터입니다.
-* 이 정보가 최신화되야하는 시점은 '관리자가 채널정보를 수정할 때'와 '구독자 수가 늘어날 때'입니다.
+하지만 캐시 데이터는 사용자의 브라우저에 저장됩니다.
 
-### Proposal
-* 구독자 수의 실시간 갱신 대신, n분의 지연이 발생해도 괜찮은지 기획팀과 논의하겠습니다.
-* 대신, 관리자의 정보 수정만큼은 즉시 반영하는 조건으로 타협안을 제시하겠습니다.
+Nextjs의 차별점은 Server Side에 Cache를 저장합니다. (Data Cache, Full Route Cache)
 
-### Implementation
-* 구독자 수는 실시간으로 최신화 될 필요성이 적다고 판단되어, **n분 주기의 [Time-based Revalidation](https://nextjs.org/docs/14/app/building-your-application/caching#revalidating-1)**을 적용하겠습니다.
-* 반면, 관리자 수정 시점에는 **[On-demand Revalidation](https://nextjs.org/docs/14/app/building-your-application/caching#revalidating-1)**을 통해 즉시 갱신하겠습니다.
+그런데, (저희가 구현했던) 대부분의 페이지는 private 페이지에, 자주바뀌는 데이터라는 특징이 있었고, 캐싱 기능이 불필요했습니다.
 
-### Impact
-* 이 전략을 통해, **유저 10억 명이 동시에 접속하더라도 백엔드 API는 주기당(5분) 최대 1번만 호출됨을 보장**할 수 있습니다.
+## 문제 해결
+CSR이 단점을 상회하는 다른 장점이 없어서 Streaming으로 해결했습니다.
 
+INP는 545ms에서 333ms로 39%가 개선되었습니다.
 
-## 4. Caching Strategy: Video List
-[perf(cache): 비디오 목록 API에 캐싱 비활성화 적용](https://github.com/developer-choi/best-practice/pull/2/commits/ffe73cf43c4baf2a3cb3f4436304488b6034dfed)
+Server Component로 만들었기 때문에, CSR로 만들었던 페이지의 경우 번들사이즈가 48% 감소했습니다. (10.7kB > 5.5kB)
 
-### Analysis
-비디오 목록에는 **실시간으로 변하는 조회수**가 포함되어 있습니다.
+적용하는 방법도 짧고 간단해서 (커밋 링크) 10여개 페이지에 적용하는데 **30분**도 걸리지않았습니다.
 
-여기서 두 가지 관점이 충돌합니다:
-1.  **Efficiency:** 물론 1의 자리까지 정확할 필요는 없으니, 캐싱을 해서 서버 부하를 줄이는 게 기술적으로는 더 효율적일 수 있습니다.
-2.  **User Expectation:** 하지만 사용자들은 보통 이런 숫자가 바로바로 바뀌는 것을 더 자연스럽게 느낍니다.
+# 다른 상황이라면 다른 방법이 나을까?
 
-### Decision
-하지만 사용자가 영상을 시청했는데 조회수가 그대로라면 오히려 어색할 것 같았습니다.
+## 만약 public 페이지를 구현한다면?
+미래에 학습자를 위한 사이트를 만들 예정에 있어서, 좀 더 검토를 진행했습니다.
 
-### Implementation
-* 따라서 비디오 목록 API에는 `cache: 'no-store'` 옵션을 적용하여, 매 요청마다 최신 데이터를 가져오도록 구현했습니다.
+모든 사용자에게 똑같은 데이터가 보이는 웹 페이지가 있다면,
 
+CSR을 할 경우, 10만명의 사용자가 1번씩 접근하면 백엔드 API를 10만번 호출해야했습니다.
 
-## 5. Future Plan: Partial Prerendering (PPR)
+그대신 Data Cache / Full Route Cache를 사용하게 될 경우, 10억명이어도 백엔드 API 횟수는 1번으로 가능했습니다.
+- 서버에서 캐시데이터를 들고있다가 모든 유저에게 제공하면 되기 때문
 
-현재 방식에도 아직 아쉬움이 남아있습니다.
+그러므로, public 페이지도 Streaming을 포함한 Server Side 방식이 우세해보였습니다.
 
-### Limitation
-> [During rendering, if a dynamic function or uncached data request is discovered, Next.js will switch to dynamically rendering the whole route. (Nextjs docs)](https://nextjs.org/docs/14/app/building-your-application/rendering/server-components#switching-to-dynamic-rendering)
+## 그럼 Tanstack Query는 언제 써야하는가?
+절대 Streaming 할 수 없는 경우에는 여전히 유효했습니다.
 
-> [In most websites, routes are not fully static or fully dynamic (Nextjs docs)](https://nextjs.org/docs/14/app/building-your-application/rendering/server-components#dynamic-rendering)
+1. 더보기 버튼 눌러서 데이터 추가로 가져오기
+2. 스크롤 더 내려서 다음 페이지 데이터 가져오기
+3. Window Focus 이벤트가 발생하면 Background refetching 하기
 
-공식 문서의 설명처럼 대부분의 웹사이트는 정적/동적 요소가 혼재되어 있습니다. 하지만 현재는 `cookies()`와 같은 동적 함수를 하나만 사용해도 **페이지 전체가 Full Route Cache(Static Build) 대상에서 제외되는 한계**가 있습니다.
+브라우저에서만 발생하는 사용자의 이벤트는 당연히 Server에서 할 수 있는 일이 아닙니다.
 
-### Expectation
-향후 [Partial Prerendering](https://nextjs.org/docs/15/app/getting-started/partial-prerendering) 기능이 Stable 단계로 도입되기를 기대하고 있습니다.
+# 정말로 이 방법이 올바른가?
 
-> [to combine static and dynamic content in the same route. This improves the initial page (Nextjs docs)](https://nextjs.org/docs/15/app/getting-started/partial-prerendering)
+제 뇌피셜이 아니라 합리적인 판단이었음을 출처로 보여드립니다.
 
----
+## Nextjs 공식문서 링크 & 언급
 
-# Rethinking Tanstack Query
+## Tanstack Query 공식문서 링크 & 언급
 
-### Context
-저는 이번 프로젝트에 Tanstack Query를 도입하지 않았습니다.
+# 다른 해결방법은 없었는가?
+성능을 개선하는 방법은 정말 다양합니다.
 
-하지만, Tanstack Query를 사용하여 개발하시는 분들을 많이 봤습니다.
+렌더링 방식은 그중 하나일 뿐입니다.
 
-주로 클라이언트에서 데이터를 페칭했고, 페이지를 이동했다가 다시 돌아왔을 때 캐시된 데이터를 보여주기 위함이었습니다.
+웹 페이지가 브라우저에게 전달되고, 각종 리소스를 다운받는 그 전체 과정을 하나하나 전부 개선한다면
 
-그래서, 이 방식이 현재의 Next.js 환경에서도 여전히 최선인지 다시 한번 고민해 보았습니다.
+이론상 가장 빠른 웹페이지를 만들 수 있습니다.
 
-### Analysis
-리서치 과정에서 TkDodo 또한 이와 같은 견해를 가지고 있음을 확인했습니다.
+그 방법들중 가장 쉽고, 효과가 큰것은 (제가 생각하기에) 렌더링 방식입니다.
 
-> To understand if your application can benefit from React Query when also using Server Components, see the article [You Might Not Need React Query.](https://tkdodo.eu/blog/you-might-not-need-react-query)
-
-### Decision
-저자의 견해에 깊이 공감하여, 저자가 제시한 기준을 거의 그대로 따르기로 했습니다.
-
-1. 기본적으로 Tanstack Query는 사용하지 않습니다.
-2. 단, 아래 2가지 경우처럼 특별히 필요한 상황에만 사용합니다.
-
-* **Infinite Scroll:** 스크롤 이벤트는 서버에서 발생하는게 아니기 때문에, 사용자의 브라우저에 데이터를 캐시로 저장해야합니다.
-* **Background Refetching:** `Window Focus` 시 최신 데이터 갱신 등 정교한 동기화가 필요한 경우에도 Tanstack Query는 유효합니다.
-
-### Collaboration
-* 다만, 위 기준은 개인적인 기술적 지향점입니다.
-* 실무 환경에서는 합리적인 도입 근거가 있거나, 팀원들의 선호도에 따라 달라질 수 있습니다.
+성능 개선이라는 전체 카테고리중 렌더링 방식 하나밖에 경험을 못해봤기 떄문에, 더 많은 경험을 쌓고싶습니다.
