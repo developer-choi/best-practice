@@ -29,7 +29,7 @@
 
 ---
 
-# 2. Getting Started
+# Getting Started
 
 아래 링크를 통해 배포된 결과물을 바로 확인하시거나, 로컬 환경에서 실행해보실 수 있습니다.
 
