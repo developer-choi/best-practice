@@ -1,24 +1,31 @@
-# Project Overview
-
-> [유튜브 채널 페이지](https://www.youtube.com/@VercelHQ)를 예제로 구현하며, 저의 개발 가치관을 담은 프로젝트입니다.
+# 개요
+실무에서 겪은 문제의 해결과정을 **예제 기준**으로 소개드립니다.
 
 ---
 
-# 1. Project Concept
+# 1. 성능 개선
 
-구현 과정을 PR 단위로 기록했습니다. 각 링크를 클릭하시면 상세 내용을 확인하실 수 있습니다.
+### 1-1. 잘못된 SSR 방식 vs Streaming 방식 TTFB 비교  
+<img width="896" height="403" src="/docs/ttfb.png" />
 
-### PR 1. [성능 개선](https://github.com/developer-choi/best-practice/pull/2)
-* **Server Components:** 번들 사이즈 감소
-* **Streaming:** SSR의 Blocking 문제 해결 및 TTFB 단축
-* **Caching Strategy:** 데이터 성격에 따른 Time-based, On-demand Revalidation 설계
+### 1-2. CSR vs Server Component 대비 번들 사이즈 감소량
+<img width="621" height="255" src="/docs/bundle.png" />
 
-### PR 2. [Sentry 도입](https://github.com/developer-choi/best-practice/pull/3)
-* **Class-based:** Sentry 로직을 추상화하여, 팀원들이 별도 학습 없이 사용 가능
-* **Triage Process:** `발견 → 분류 → 해결`로 이어지는 에러 대응 워크플로우
+### [개선방법 링크](https://github.com/developer-choi/best-practice/pull/2)
 
-### PR 3. [테스트 적용](https://github.com/developer-choi/best-practice/pull/4)
-Testing Library의 공식 원칙(Guiding Principles)을 준수하여, 사용자 관점의 테스트를 작성했습니다.
+---
+
+# 2. Sentry 로깅 표준화
+
+### 2-1. Sentry 이슈 갯수가 86종에서 1종으로 줄어든 방법
+<img width="528" height="262" src="/docs/error.png" />
+
+1,500건의 오류이벤트, 86종의 Sentry 이슈가 각각 **250건**, **1종**으로 줄었습니다.
+
+### 2-2. 기존 단서데이터, 최신 단서데이터 비교하는 캡처
+<img width="923" height="580" src="/docs/extra.png" />
+
+### [개선방법 링크](https://github.com/developer-choi/best-practice/pull/3)
 
 ---
 
