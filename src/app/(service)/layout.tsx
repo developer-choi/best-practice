@@ -1,9 +1,12 @@
+'use client';
+
 import React, {ReactNode} from 'react';
 import '@/styles/reset.css';
 import '@/styles/global.css';
 import styles from './layout.module.css';
 import BaseImage from '@/components/BaseImage';
 import PortfolioLink from '@/components/PortfolioLink';
+import Providers from '@/components/Providers';
 
 export interface ServiceLayoutProps {
   children?: ReactNode;
@@ -11,15 +14,13 @@ export interface ServiceLayoutProps {
 
 export default function ServiceLayout({children}: ServiceLayoutProps) {
   return (
-    <>
+    <Providers>
       <Header/>
       <div className={styles.layoutContainer}>
         <Sidebar/>
-        <div className={styles.pageContainer}>
-          {children}
-        </div>
+        <div className={styles.pageContainer}>{children}</div>
       </div>
-    </>
+    </Providers>
   );
 }
 

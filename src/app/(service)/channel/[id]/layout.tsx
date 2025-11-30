@@ -1,3 +1,5 @@
+'use client';
+
 import React, {type ReactNode} from 'react';
 import styles from './layout.module.css';
 import {ChannelInfoApiResponse} from '@/types/channel';
@@ -5,35 +7,32 @@ import BaseImage from '@/components/BaseImage';
 import classNames from 'classnames';
 import PortfolioLink from '@/components/PortfolioLink';
 import {getChannelInfoApi} from '@/api/channel';
-import {notFound} from 'next/navigation';
-import {ApiResponseError} from '@/utils/ApiResponseError';
+import {useParams} from 'next/navigation';
+import {useSuspenseQuery} from '@tanstack/react-query';
 
 export interface ChannelLayoutProps {
   children?: ReactNode;
-  params: {id: string};
 }
 
-export default async function ChannelLayout({children, params}: ChannelLayoutProps) {
-  try {
-    const {data} = await getChannelInfoApi(params.id);
+export default function ChannelLayout({children}: ChannelLayoutProps) {
+  const params = useParams<{id: string}>();
+  const {data: channelInfo} = useSuspenseQuery({
+    queryKey: ['channel', params.id, 'info'],
+    queryFn: () => getChannelInfoApi(params.id),
+  });
 
-    return (
-      <div className={styles.container}>
-        <header>
-          <BaseImage src={data.banner} alt="Channel Banner" className={styles.channelBanner} width={1284} height={207}/>
-          <ChannelInfo info={data}/>
-          <ChannelTabs id={params.id}/>
-        </header>
-        {children}
-      </div>
-    );
-  } catch (error) {
-    if (error instanceof ApiResponseError && error.response.status === 404) {
-      notFound();
-    } else {
-      throw error;
-    }
-  }
+  const {data} = channelInfo;
+
+  return (
+    <div className={styles.container}>
+      <header>
+        <BaseImage src={data.banner} alt="Channel Banner" className={styles.channelBanner} width={1284} height={207}/>
+        <ChannelInfo info={data}/>
+        <ChannelTabs id={params.id}/>
+      </header>
+      {children}
+    </div>
+  );
 }
 
 function ChannelInfo({info}: {info: Pick<ChannelInfoApiResponse, 'avatar' | 'subscribersCount' | 'name'>}) {
